@@ -1,7 +1,6 @@
 import org.junit.jupiter.api.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.publisher.SignalType;
 
 import java.time.Duration;
 import java.util.Arrays;
@@ -10,7 +9,6 @@ import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -131,7 +129,6 @@ public class c1_Introduction extends IntroductionBase {
         serviceResult
             .doOnNext(companyList::add)
             .subscribe()
-        //todo: add an operator here, don't use any blocking operator!
         ;
 
         Thread.sleep(1000); //bonus: can you explain why this line is needed?
@@ -154,13 +151,8 @@ public class c1_Introduction extends IntroductionBase {
         AtomicReference<Boolean> serviceCallCompleted = new AtomicReference<>(false);
         CopyOnWriteArrayList<String> companyList = new CopyOnWriteArrayList<>();
 
-        fortuneTop5().doFinally( signalType -> {
-                if( signalType.equals( SignalType.ON_COMPLETE ) ) {
-                    serviceCallCompleted.getAndSet( true );
-                }
-            } )
-            .subscribe( companyList::add )
-        //todo: change this line only
+        fortuneTop5()
+            .subscribe( companyList::add, throwable -> {}, () -> serviceCallCompleted.getAndSet( true ) )
         ;
 
         Thread.sleep(1000);
